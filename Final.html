@@ -265,22 +265,22 @@
 
   <script>
     // --- Configuration: Set your access mode ---
-    const ACCESS_MODE = "local"; // Options: "local" or "remote"
+    const ACCESS_MODE = "remote"; // Options: "local" or "remote"
     
     // For LOCAL access (same network)
-    const LOCAL_IPS = [
-      { name: "Guard Room 1", location: "Main Entrance", ip: "192.168.1.101" },
-      { name: "Guard Room 2", location: "FGS", ip: "192.168.8.172" },
-      { name: "Guard Room 3", location: "Kumbura Side Entrance", ip: "192.168.1.103" }
-    ];
+    //const LOCAL_IPS = [
+    //  { name: "Guard Room 1", location: "Main Entrance", ip: "192.168.1.101" },
+    //  { name: "Guard Room 2", location: "FGS", ip: "192.168.8.172" },
+    //  { name: "Guard Room 3", location: "Kumbura Side Entrance", ip: "192.168.1.103" }
+    //];
     
     // For REMOTE access (different network) - Use gateway server
-    const GATEWAY_URL = "ws://your-gateway-server.com:8080"; // Change this to your gateway server
+    const GATEWAY_URL = "wss://street-light-web.onrender.com"; // Change this to your gateway server
     
     const devices = ACCESS_MODE === "local" ? LOCAL_IPS : [
-      { name: "Guard Room 1", location: "Main Entrance", gateway: true, id: "175.157.142.202:8101" },
-      { name: "Guard Room 2", location: "FGS", gateway: true, id: "175.157.142.202:8102" },
-      { name: "Guard Room 3", location: "Kumbura Side Entrance", gateway: true, id: "175.157.142.202:8103" }
+      { name: "Guard Room 1", location: "Main Entrance", gateway: true, id: "panel1" },
+      { name: "Guard Room 2", location: "FGS", gateway: true, id: "panel2" },
+      { name: "Guard Room 3", location: "Kumbura Side Entrance", gateway: true, id: "panel3" }
     ];
 
     const container = document.getElementById("panels");
