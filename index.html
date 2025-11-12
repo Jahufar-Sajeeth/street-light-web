@@ -267,12 +267,12 @@
     // --- Configuration: Set your access mode ---
     const ACCESS_MODE = "remote"; // Options: "local" or "remote"
     
-    // For LOCAL access (same network)
-    //const LOCAL_IPS = [
+    For LOCAL access (same network)
+    const LOCAL_IPS = [
     //  { name: "Guard Room 1", location: "Main Entrance", ip: "192.168.1.101" },
-    //  { name: "Guard Room 2", location: "FGS", ip: "192.168.8.172" },
+      { name: "Guard Room 2", location: "FGS", ip: "192.168.8.172" },
     //  { name: "Guard Room 3", location: "Kumbura Side Entrance", ip: "192.168.1.103" }
-    //];
+    ];
     
     // For REMOTE access (different network) - Use gateway server
     const GATEWAY_URL = "wss://street-light-web.onrender.com"; // Change this to your gateway server
@@ -457,4 +457,5 @@
     }
   </script>
 </body>
+
 </html>
