@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IoT Street Light Control System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0A192F 0%, #1F4068 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      padding: 30px 20px;
+      background: rgba(31, 64, 104, 0.3);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(249, 199, 79, 0.2);
+    }
+    
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      color: #FFD700;
+    }
+    
+    .header h2 {
+      font-size: 1.2em;
+      font-weight: 300;
+      color: #F9C74F;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .panel {
+      background: #F0F0F0;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+      border: 2px solid rgba(249, 199, 79, 0.3);
+    }
+    
+    .panel:hover {
+      transform: translateY(-5px);
+      border-color: #F9C74F;
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #F9C74F;
+    }
+    
+    .panel-title {
+      font-size: 1.4em;
+      color: #0A192F;
+      font-weight: 600;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+      color: #666;
+    }
+    
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-dot.connected {
+      background: #28a745;
+      box-shadow: 0 0 10px #28a745;
+    }
+    
+    .status-dot.disconnected {
+      background: #dc3545;
+      box-shadow: 0 0 10px #dc3545;
+      animation: none;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .mode-section {
+      margin-bottom: 25px;
+    }
+    
+    .mode-switch {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: rgba(10, 25, 47, 0.1);
+      padding: 8px;
+      border-radius: 12px;
+    }
+    
+    .mode-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      color: #666;
+    }
+    
+    .mode-btn.auto-active {
+      background: linear-gradient(135deg, #1F4068 0%, #0A192F 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(31, 64, 104, 0.5);
+    }
+    
+    .mode-btn.manual-active {
+      background: linear-gradient(135deg, #F9C74F 0%, #FFD700 100%);
+      color: #0A192F;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(249, 199, 79, 0.5);
+    }
+    
+    .manual-controls {
+      display: none;
+      gap: 10px;
+      margin-top: 15px;
+      padding: 15px;
+      background: linear-gradient(135deg, rgba(249, 199, 79, 0.15), rgba(255, 215, 0, 0.15));
+      border-radius: 12px;
+      border: 2px dashed #F9C74F;
+    }
+    
+    .manual-controls.show {
+      display: flex;
+    }
+    
+    .control-btn {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      color: #666;
+      position: relative;
+    }
+    
+    .control-btn.on-active {
+      background: linear-gradient(135deg, #FFD700 0%, #F9C74F 100%);
+      color: #0A192F;
+      border-color: #FFD700;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
+      padding-right: 50px;
+      font-weight: 700;
+    }
+    
+    .control-btn.on-active::after {
+      content: '💡';
+      position: absolute;
+      font-size: 1.8em;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      animation: glow 1.5s infinite;
+    }
+    
+    @keyframes glow {
+      0%, 100% { 
+        opacity: 0.7;
+        filter: drop-shadow(0 0 8px #FFD700);
+      }
+      50% { 
+        opacity: 1;
+        filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #F9C74F);
+      }
+    }
+    
+    .control-btn.off-active {
+      background: linear-gradient(135deg, #1F4068 0%, #0A192F 100%);
+      color: white;
+      border-color: #1F4068;
+      box-shadow: 0 4px 20px rgba(31, 64, 104, 0.6);
+      font-weight: 700;
+    }
+    
+    .info-section {
+      background: rgba(10, 25, 47, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      border: 1px solid rgba(31, 64, 104, 0.2);
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(31, 64, 104, 0.1);
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    .info-value {
+      color: #1F4068;
+      font-weight: 600;
+    }
+    
+    .auto-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1F4068, #0A192F);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌟 IoT Street Light Control System</h1>
+    <h2>ESP32 + LoRa Wireless Network</h2>
+  </div>
+
+  <div class="dashboard" id="panels"></div>
+
+  <script>
+    // --- Configuration: Set your access mode ---
+    const ACCESS_MODE = "local"; // Options: "local" or "remote"
+    
+    // For LOCAL access (same network)
+    const LOCAL_IPS = [
+      { name: "Guard Room 1", location: "Main Entrance", ip: "192.168.1.101" },
+      { name: "Guard Room 2", location: "FGS", ip: "192.168.8.172" },
+      { name: "Guard Room 3", location: "Kumbura Side Entrance", ip: "192.168.1.103" }
+    ];
+    
+    // For REMOTE access (different network) - Use gateway server
+    const GATEWAY_URL = "ws://your-gateway-server.com:8080"; // Change this to your gateway server
+    
+    const devices = ACCESS_MODE === "local" ? LOCAL_IPS : [
+      { name: "Guard Room 1", location: "Main Entrance", gateway: true, id: "175.157.142.202:8101" },
+      { name: "Guard Room 2", location: "FGS", gateway: true, id: "175.157.142.202:8102" },
+      { name: "Guard Room 3", location: "Kumbura Side Entrance", gateway: true, id: "175.157.142.202:8103" }
+    ];
+
+    const container = document.getElementById("panels");
+    const state = devices.map(() => ({
+      mode: 'auto',
+      light: 'off',
+      lastOn: '--:--',
+      lastOff: '--:--',
+      duration: '--'
+    }));
+
+    devices.forEach((dev, index) => {
+      const div = document.createElement("div");
+      div.className = "panel";
+      div.innerHTML = `
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">${dev.name}</div>
+            <div style="color: #999; font-size: 0.9em; margin-top: 5px;">${dev.location}</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot disconnected" id="dot${index}"></div>
+            <span id="status${index}">Connecting...</span>
+          </div>
+        </div>
+        
+        <div class="mode-section">
+          <div class="mode-switch">
+            <button class="mode-btn auto-active" id="auto${index}" onclick="setAuto(${index})">
+              🤖 AUTO MODE
+            </button>
+            <button class="mode-btn" id="manual${index}" onclick="setManual(${index})">
+              ✋ MANUAL MODE
+            </button>
+          </div>
+          
+          <div class="manual-controls" id="manualControls${index}">
+            <button class="control-btn" id="on${index}" onclick="manualControl(${index}, 'ON')">
+              TURN ON
+            </button>
+            <button class="control-btn" id="off${index}" onclick="manualControl(${index}, 'OFF')">
+              TURN OFF
+            </button>
+          </div>
+        </div>
+        
+        <div class="info-section">
+          <div class="info-row">
+            <span class="info-label">Last Turned ON:</span>
+            <span class="info-value" id="lastOn${index}">--:--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Last Turned OFF:</span>
+            <span class="info-value" id="lastOff${index}">--:--</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Last Duration:</span>
+            <span class="info-value" id="duration${index}">--</span>
+          </div>
+          <div id="autoIndicator${index}">
+            <div class="auto-badge">🤖 AUTO MODE ACTIVE</div>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    let sockets = [];
+    devices.forEach((dev, i) => {
+      let ws;
+      
+      if (ACCESS_MODE === "local") {
+        // Direct connection to ESP32 (same network)
+        ws = new WebSocket(`ws://${dev.ip}:81/`);
+      } else {
+        // Connection through gateway server (remote access)
+        ws = new WebSocket(`${GATEWAY_URL}/${dev.id}`);
+      }
+      
+      ws.onopen = () => {
+        document.getElementById(`status${i}`).innerText = "Connected";
+        document.getElementById(`dot${i}`).className = "status-dot connected";
+        
+        // Automatically activate AUTO mode when connected
+        setAuto(i);
+      };
+      
+      ws.onclose = () => {
+        document.getElementById(`status${i}`).innerText = "Disconnected";
+        document.getElementById(`dot${i}`).className = "status-dot disconnected";
+      };
+      
+      ws.onerror = (error) => {
+        console.error(`WebSocket error for ${dev.name}:`, error);
+        document.getElementById(`status${i}`).innerText = "Connection Error";
+        document.getElementById(`dot${i}`).className = "status-dot disconnected";
+      };
+      
+      sockets.push(ws);
+    });
+
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function calculateDuration(onTime, offTime) {
+      if (!onTime || !offTime || onTime === '--:--' || offTime === '--:--') return '--';
+      
+      const [onH, onM, onS] = onTime.split(':').map(Number);
+      const [offH, offM, offS] = offTime.split(':').map(Number);
+      
+      let totalSeconds = (offH * 3600 + offM * 60 + offS) - (onH * 3600 + onM * 60 + onS);
+      
+      if (totalSeconds < 0) totalSeconds += 86400;
+      
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function setAuto(i) {
+      sockets[i].send("AUTO_ON");
+      state[i].mode = 'auto';
+      
+      document.getElementById(`auto${i}`).classList.add("auto-active");
+      document.getElementById(`manual${i}`).classList.remove("manual-active");
+      document.getElementById(`manualControls${i}`).classList.remove("show");
+      document.getElementById(`on${i}`).classList.remove("on-active");
+      document.getElementById(`off${i}`).classList.remove("off-active");
+      
+      document.getElementById(`autoIndicator${i}`).innerHTML = '<div class="auto-badge">🤖 AUTO MODE ACTIVE</div>';
+    }
+
+    function setManual(i) {
+      sockets[i].send("MANUAL_OFF");
+      state[i].mode = 'manual';
+      
+      document.getElementById(`manual${i}`).classList.add("manual-active");
+      document.getElementById(`auto${i}`).classList.remove("auto-active");
+      document.getElementById(`manualControls${i}`).classList.add("show");
+      document.getElementById(`on${i}`).classList.remove("on-active");
+      document.getElementById(`off${i}`).classList.remove("off-active");
+      
+      document.getElementById(`autoIndicator${i}`).innerHTML = '';
+    }
+
+    function manualControl(i, action) {
+      if (action === "ON") {
+        sockets[i].send("MANUAL_ON");
+        const time = formatTime();
+        state[i].lastOn = time;
+        state[i].light = 'on';
+        
+        document.getElementById(`on${i}`).classList.add("on-active");
+        document.getElementById(`off${i}`).classList.remove("off-active");
+        document.getElementById(`lastOn${i}`).innerText = time;
+      } else {
+        sockets[i].send("MANUAL_OFF");
+        const time = formatTime();
+        state[i].lastOff = time;
+        state[i].light = 'off';
+        
+        const duration = calculateDuration(state[i].lastOn, time);
+        state[i].duration = duration;
+        
+        document.getElementById(`on${i}`).classList.remove("on-active");
+        document.getElementById(`off${i}`).classList.add("off-active");
+        document.getElementById(`lastOff${i}`).innerText = time;
+        document.getElementById(`duration${i}`).innerText = duration;
+      }
+    }
+  </script>
+</body>
+</html>
